@@ -1,13 +1,14 @@
 from bs4 import BeautifulSoup
 import requests
 import os
+from func import helper
 
 
 def parser(url: str) -> None:
 
     try:
 
-        os.makedirs('/home/kolo/Python_Projects/Collector/content', exist_ok=True)
+        os.makedirs('content', exist_ok=True)
 
         content = requests.get(url)
 
@@ -15,28 +16,48 @@ def parser(url: str) -> None:
 
         cont = soup.find('div', class_='texts col')
 
-        print(cont)
-
-        original_song_name = cont.find('h2', class_='original').text
+        original_song_name = cont.find('h2', class_='original').text.replace(' ', '_').replace('?', '').replace(',', '').replace('*', '')
 
         translate_song_name = cont.find('h2', class_='translate').text
 
         original = cont.find_all('div', class_='original')
+        original = [x.text.replace('\n', '') for x in original]
 
         translate = cont.find_all('div', class_='translate')
+        translate = [x.text.replace('\n', '') for x in translate]
 
-        longest = len(max([x.text for x in original], key=len))
+        longest = len(max(original, key=len))
 
-        with open(f'/home/kolo/Python_Projects/Collector/content/{original_song_name}.txt', 'w', encoding='utf8') as file:
+        with open(f'content\\{original_song_name}.txt', 'w', encoding='utf8') as file:
 
             file.write(original_song_name + ((longest - len(original_song_name) + 1)*' ') + translate_song_name + '\n\n')
 
             for idk, line in enumerate(original):
 
-                file.write(line.text + ((longest - len(line.text) + 1) * ' ') + translate[idk].text + '\n')
+                file.write(line + ((longest - len(line) + 1) * ' ') + translate[idk] + '\n')
 
-        print(f'Скрипт успешно завершил работу')
+        yes_no = input('Скрипт успешно завершил работу, желаете продолжить?(y,n)\n')
+
+        if yes_no.lower() in ['y', 'yes', 'ye']:
+
+            helper.helper()
+
+        else:
+
+            print('GoodBye!')
+
+            return
 
     except Exception as e:
 
-        print(f'Скрипт завершил работу с ошибкой, {e}')
+        yes_no = input(f'{e}\nСкрипт завершил работу с ошибкой, желаете продолжить?(y,n)\n')
+
+        if yes_no.lower() in ['y', 'yes', 'ye']:
+
+            helper.helper()
+
+        else:
+
+            print('GoodBye!')
+
+            return
